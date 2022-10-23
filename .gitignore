@@ -1,0 +1,6 @@
+.coveragecache
+.docker/data
+.idea
+.php-cs-fixer.cache
+.phpunit.result.cache
+vendor

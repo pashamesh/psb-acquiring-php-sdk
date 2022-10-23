@@ -1,0 +1,53 @@
+{
+    "name": "pashamesh/psb-acquiring-php-sdk",
+    "keywords": [
+        "psb",
+        "promsvyazbank",
+        "psbank",
+        "sdk",
+        "php",
+        "api",
+        "package",
+        "psb sdk",
+        "psb api",
+        "psb acquiring",
+        "psb package"
+    ],
+    "description": "PromSvyazBank (https://www.psbank.ru/) acquiring API PHP Software Development Kit.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Pashamesh\\PsbAcquiringPhpSdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pashamesh\\PsbAcquiringPhpSdk\\Tests\\": "tests"
+        }
+    },
+    "authors": [
+        {
+            "name": "Pavel Meshkov",
+            "email": "pasha.mesh@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "vimeo/psalm": "^4.29",
+        "phpunit/phpunit": "^9.5"
+    },
+    "scripts": {
+        "test": [
+            "@test:unit",
+            "@test:static"
+        ],
+        "test:static": "./vendor/bin/psalm",
+        "test:unit": "./vendor/bin/phpunit --testsuite Unit",
+        "lint:fix": "./vendor/bin/php-cs-fixer fix --allow-risky=yes",
+        "lint:show": "@lint:fix --dry-run --diff --verbose"
+    }
+}

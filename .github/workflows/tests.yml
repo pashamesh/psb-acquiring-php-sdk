@@ -1,0 +1,62 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  php-test-unit:
+    name: Unit and Feature tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: ["7.4", "8.0", "8.1"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('*/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - uses: php-actions/composer@v6
+        with:
+          php_version: ${{ matrix.php }}
+
+      - name: Run tests
+        uses: php-actions/composer@v6
+        with:
+          php_version: ${{ matrix.php }}
+          command: test:unit
+
+  php-test-static:
+    name: Code static analysis
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: ["7.4", "8.0", "8.1"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('*/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - uses: php-actions/composer@v6
+        with:
+          php_version: ${{ matrix.php }}
+
+      - name: Do static analysis
+        uses: php-actions/composer@v6
+        with:
+          php_version: ${{ matrix.php }}
+          memory_limit: 256M
