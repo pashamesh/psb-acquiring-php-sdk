@@ -1,8 +1,27 @@
 version: "3.9"
 
 services:
-  dev:
+  php:
     build: .docker/php
     volumes:
-      - ./:/app
+      - ./:/app:cached
       - ./.docker/data/composer:/root/.composer
+
+  web:
+    image: nginx:stable-alpine
+    ports:
+      - "80:${EXPOSE_PORT:-80}"
+    depends_on:
+      - php
+    volumes:
+      - ./:/app:cached
+      - ./.docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  expose:
+    image: beyondcodegmbh/expose-server:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "4040:${EXPOSE_DASHBOARD_PORT:-4040}"
+    command: 'share http://host.docker.internal:${EXPOSE_PORT:-80} --auth="${EXPOSE_TOKEN}" --subdomain="${EXPOSE_SUBDOMAIN:-psb-php-sdk}"'
+    profiles: [ "share" ]

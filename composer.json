@@ -18,7 +18,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Pashamesh\\PsbAcquiringPhpSdk\\": "src/"
+            "Pashamesh\\PsbAcquiringPhpSdk\\": "src"
         }
     },
     "autoload-dev": {
@@ -33,12 +33,15 @@
         }
     ],
     "require": {
-        "php": "^7.3"
+        "php": "^7.4",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.4",
         "vimeo/psalm": "^4.29",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "symfony/var-dumper": "^5.4"
     },
     "scripts": {
         "test": [

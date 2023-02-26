@@ -1,15 +1,26 @@
+-include .env
+
 .SILENT:
 
-.PHONY: setup down-clear shell lint-show lint test
+.PHONY: setup up share down shell lint-show lint test
 
-DC = docker-compose run --rm dev
+DC = docker-compose run --rm php
+EXPOSE_DASHBOARD_PORT ?= 4040
 
 all: setup
 
 setup:
 	$(DC) composer install
 
-down-clear:
+up:
+	docker-compose up -d
+
+share:
+	docker-compose --profile share up -d && \
+		echo && \
+		echo "Expose Dashboard: http://localhost:${EXPOSE_DASHBOARD_PORT}"
+
+down:
 	docker-compose down --remove-orphans -v
 
 shell:
