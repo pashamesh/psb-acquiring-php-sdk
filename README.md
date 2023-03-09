@@ -3,7 +3,8 @@
     <img src="https://github.com/pashamesh/psb-acquiring-php-sdk/actions/workflows/tests.yml/badge.svg" alt="Tests">
 </p>
 
-# [PromSvyazBank](https://www.psbank.ru/) acquiring API PHP SDK.
+# <a href="https://www.psbank.ru/"><img src=".media/logo.svg" width="100" height="30"/></a> acquiring API PHP SDK.
+
 This package provides Software Development Kit for PromSvyazBank (PSB) Acquiring API.
 
 ## Installation
