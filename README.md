@@ -239,3 +239,6 @@ $syncResponse = $psb
     ->forgetCard($cardTokenId)
     ->sendRequest();
 ```
+
+## Links
+- [Original docs (RU)](https://www.psbank.ru/-/media/Files/Business/Acquiring/Internet/TechDoc/Interaction_procedure_standard.pdf)
