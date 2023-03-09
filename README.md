@@ -6,7 +6,13 @@
 # [PromSvyazBank](https://www.psbank.ru/) acquiring API PHP SDK.
 This package provides Software Development Kit for PromSvyazBank (PSB) Acquiring API.
 
-## How to set up
+## Installation
+You can install the package via composer:
+```shell
+composer require pashamesh/psb-acquiring-php-sdk
+```
+
+## Usage
 
 ### Setup client
 Setup instance of `Config`: 
