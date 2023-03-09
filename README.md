@@ -240,5 +240,34 @@ $syncResponse = $psb
     ->sendRequest();
 ```
 
+## Development
+There is a Docker-compose setup and set of handy `make` shortcuts for development purposes.
+
+### Install dependencies
+
+Use next command to install composer dependencies:
+```shell
+make
+```
+
+### Code styling
+
+This package follows
+the [PSR-12](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-12-extended-coding-style-guide.md) coding
+standard and the [PSR-4](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md) autoload
+standard.
+
+Use next command to fix code styling:
+```shell
+make lint
+```
+
+### Running tests
+Use next command to run `Unit` and code static analysis:
+
+```shell
+make test
+```
+
 ## Links
 - [Original docs (RU)](https://www.psbank.ru/-/media/Files/Business/Acquiring/Internet/TechDoc/Interaction_procedure_standard.pdf)
