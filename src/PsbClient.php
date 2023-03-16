@@ -6,7 +6,7 @@ use GuzzleHttp\Psr7\Request;
 use LogicException;
 use Pashamesh\PsbAcquiringPhpSdk\Interfaces\SignerInterface;
 use Pashamesh\PsbAcquiringPhpSdk\Interfaces\TransactionType;
-use Psr\Http\Client\ClientInterface;
+use GuzzleHttp\Client as Guzzle;
 
 class PsbClient
 {
@@ -18,7 +18,7 @@ class PsbClient
     /** @var \Closure():string $getRandomHex */
     private $getRandomHex;
     private FormBuilder $formBuilder;
-    private ClientInterface $httpClient;
+    private Guzzle $httpClient;
 
 
     /**
@@ -31,7 +31,7 @@ class PsbClient
         ?callable $getTimestamp = null,
         ?callable $getRandomHex = null,
         ?FormBuilder $formBuilder = null,
-        ?ClientInterface $httpClient = null
+        ?Guzzle $httpClient = null
     ) {
         $this->config = $config;
         $this->signatureCalculator = $signatureCalculator ?? new Signer(
@@ -41,7 +41,7 @@ class PsbClient
         $this->getTimestamp = $getTimestamp ?? fn (): string => gmdate('YmdHis');
         $this->getRandomHex = $getRandomHex ?? fn (): string => bin2hex(random_bytes(16));
         $this->formBuilder = $formBuilder ?? new FormBuilder($config);
-        $this->httpClient = $httpClient ?? new \GuzzleHttp\Client();
+        $this->httpClient = $httpClient ?? new Guzzle();
 
         $this->reset();
     }
@@ -352,7 +352,7 @@ class PsbClient
             http_build_query($this->payload->toArray())
         );
 
-        $response = $this->httpClient->sendRequest($request);
+        $response = $this->httpClient->send($request);
         $this->reset();
 
         // TODO: Check response status.
