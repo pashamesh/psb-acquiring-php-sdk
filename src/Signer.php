@@ -20,13 +20,14 @@ class Signer implements SignerInterface
         $checksum = '';
 
         foreach ($checksumAttributes as $param) {
-            $value = !empty($payload[$param]) ? strval($payload[$param]) : null;
-            if (is_null($value) || !strlen($value)) {
+            $value = $payload[$param] ?? null;
+            $length = strlen(strval($value));
+            if (is_null($value) || !$length) {
                 $checksum .= '-';
                 continue;
             }
 
-            $checksum .= strlen($value) . $value;
+            $checksum .= $length . $value;
         }
 
         return strtoupper(hash_hmac(

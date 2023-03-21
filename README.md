@@ -247,6 +247,28 @@ $syncResponse = $psb
     ->sendRequest();
 ```
 
+### Handle callback HTTP call
+Payload of asynchronous HTTP callback request must be validated for valid signature.
+SDK provide convenient method `handleCallbackRequest`.
+It validates signature and returns [Payload](src/Payload.php) model with request attributes.
+#### Example
+```php
+try {
+    $payload = $client->handleCallbackRequest($_POST);
+    if ($payload->isOperationApproved()) {
+        $orderId = $payload->order;
+        $referenceReturnNumber = $payload->rrn;
+        $internalReference = $payload->int_ref;
+
+        // Process data here. For example store in database.
+    }
+
+    echo "OK";
+} catch (Exception $exception) {
+    echo $exception->getMessage();
+}
+```
+
 ## Development
 There is a Docker-compose setup and set of handy `make` shortcuts for development purposes.
 

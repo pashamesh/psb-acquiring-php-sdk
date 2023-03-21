@@ -30,6 +30,18 @@ class Payload
     public ?string $merch_token_id = null;
     public ?string $date_till = null;
 
+    public ?int $result = null;
+    public ?string $rc = null;
+    public ?string $rctext = null;
+    public ?string $authcode = null;
+    public ?string $token_id = null;
+    public ?string $name = null;
+    public ?string $card = null;
+    public ?string $channel = null;
+    public ?string $target_token_id = null;
+    public ?string $trx_id = null;
+    public ?string $addinfo = null;
+
     public ?string $p_sign = null;
 
     /**
@@ -41,5 +53,30 @@ class Payload
             array_filter(get_object_vars($this), fn ($value) => !is_null($value)),
             $case
         );
+    }
+
+    /**
+     * @param array<string,string|int> $attributes
+     */
+    public static function fromArray(array $attributes): self
+    {
+        $payload = new Payload();
+
+        $attributes = array_change_key_case($attributes);
+
+        foreach ($attributes as $attribute => $value) {
+            if (!property_exists($payload, $attribute)) {
+                continue;
+            }
+
+            $payload->{$attribute} = $value;
+        }
+
+        return $payload;
+    }
+
+    public function isOperationApproved(): bool
+    {
+        return $this->result === 0 && $this->rc === '00';
     }
 }

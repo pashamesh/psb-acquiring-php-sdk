@@ -8,14 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 class PayloadTest extends TestCase
 {
-    /** @dataProvider toArrayProvider */
+    /** @dataProvider payloadProvider */
     public function testToArray(Payload $payload, array $expectedLower): void
     {
         $this->assertEquals($expectedLower, $payload->toArray(CASE_LOWER));
         $this->assertEquals(array_change_key_case($expectedLower, CASE_UPPER), $payload->toArray());
     }
 
-    public function toArrayProvider(): array
+    public function payloadProvider(): array
     {
         $minimalPayload = new Payload();
         $minimalPayload->amount = '123.99';
@@ -62,11 +62,11 @@ class PayloadTest extends TestCase
 
 
         return [
-            'minimal lower case' => [
+            'minimal' => [
                 $minimalPayload,
                 $expectedMinimalArray,
             ],
-            'full lower case' => [
+            'full' => [
                 $fullPayload,
                 $expectedMinimalArray + [
                     'desc' => 'Some description',
@@ -86,6 +86,39 @@ class PayloadTest extends TestCase
                     'date_till' => '20230426',
                 ],
             ],
+        ];
+    }
+
+    /** @dataProvider payloadProvider */
+    public function testFromArray(Payload $expected, array $attributes): void
+    {
+        $this->assertEquals($expected, Payload::fromArray($attributes));
+        $this->assertEquals(
+            $expected,
+            Payload::fromArray(array_change_key_case($attributes, CASE_UPPER))
+        );
+    }
+
+    public function testFromArrayIgnoresNotExistingAttributes(): void
+    {
+        $this->assertEquals(Payload::fromArray([]), Payload::fromArray(['foo' => 'bar']));
+    }
+
+    /** @dataProvider isOperationApprovedProvider */
+    public function testIsOperationApproved(bool $expected, array $data): void
+    {
+        $this->assertEquals(
+            $expected,
+            (Payload::fromArray($data))->isOperationApproved()
+        );
+    }
+
+    public function isOperationApprovedProvider(): array
+    {
+        return [
+            'Empty' => [false, []],
+            'Success' => [true, ['RESULT' => 0, 'RC' => '00']],
+            'Duplicate transaction' => [false, ['RESULT' => 3, 'RC' => '-21']],
         ];
     }
 }

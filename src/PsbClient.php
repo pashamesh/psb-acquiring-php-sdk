@@ -12,7 +12,7 @@ class PsbClient
 {
     private Payload $payload;
     private Config $config;
-    private SignerInterface $signatureCalculator;
+    private SignerInterface $signer;
     /** @var \Closure():string $getTimestamp */
     private $getTimestamp;
     /** @var \Closure():string $getRandomHex */
@@ -20,21 +20,20 @@ class PsbClient
     private FormBuilder $formBuilder;
     private Guzzle $httpClient;
 
-
     /**
      * @param \Closure():string|null        $getTimestamp
      * @param \Closure():string|null        $getRandomHex
      */
     public function __construct(
         Config $config,
-        ?SignerInterface $signatureCalculator = null,
+        ?SignerInterface $signer = null,
         ?callable $getTimestamp = null,
         ?callable $getRandomHex = null,
         ?FormBuilder $formBuilder = null,
         ?Guzzle $httpClient = null
     ) {
         $this->config = $config;
-        $this->signatureCalculator = $signatureCalculator ?? new Signer(
+        $this->signer = $signer ?? new Signer(
             $config->component1,
             $config->component2
         );
@@ -75,11 +74,12 @@ class PsbClient
             'backref',
         ];
 
-        if (in_array($this->payload->trtype, [
-            TransactionType::REFUND,
-            TransactionType::COMPLETE_PREAUTHORIZATION,
-            TransactionType::CANCEL_PREAUTHORIZATION,
-        ], true)
+        if (
+            in_array($this->payload->trtype, [
+                TransactionType::REFUND,
+                TransactionType::COMPLETE_PREAUTHORIZATION,
+                TransactionType::CANCEL_PREAUTHORIZATION,
+            ], true)
         ) {
             $attributes = [
                 'order',
@@ -95,7 +95,23 @@ class PsbClient
                 'timestamp',
                 'nonce',
             ];
-        } else {
+        }
+        $this->payload->p_sign = $this->signer->sign(
+            $this->payload->toArray(CASE_LOWER),
+            $attributes
+        );
+
+        return $this->payload->p_sign;
+    }
+
+    private function fillConfigDefaults(): void
+    {
+        if (!in_array($this->payload->trtype, [
+            TransactionType::REFUND,
+            TransactionType::COMPLETE_PREAUTHORIZATION,
+            TransactionType::CANCEL_PREAUTHORIZATION,
+        ], true)
+        ) {
             $this->payload->merchant = $this->config->merchantNumber;
             $this->payload->merch_name = $this->config->merchantName;
             $this->payload->backref ??= $this->config->returnUrl;
@@ -109,12 +125,6 @@ class PsbClient
         $this->payload->notify_url ??= $this->config->notifyUrl;
         $this->payload->timestamp = ($this->getTimestamp)();
         $this->payload->nonce = ($this->getRandomHex)();
-        $this->payload->p_sign = $this->signatureCalculator->sign(
-            $this->payload->toArray(CASE_LOWER),
-            $attributes
-        );
-
-        return $this->payload->p_sign;
     }
 
     public function customer(string $email, bool $notify = false): self
@@ -303,6 +313,7 @@ class PsbClient
         }
         $this->payload->date_till = $dateTill;
 
+        $this->fillConfigDefaults();
         $this->sign([
             'amount',
             'currency',
@@ -320,6 +331,7 @@ class PsbClient
 
     public function getForm(): string
     {
+        $this->fillConfigDefaults();
         $this->sign();
 
         $fields = $this->payload->toArray();
@@ -335,6 +347,7 @@ class PsbClient
 
     public function sendRequest(): array
     {
+        $this->fillConfigDefaults();
         $this->sign();
 
         return $this->doRequest('/cgi-bin/cgi_link');
@@ -362,5 +375,44 @@ class PsbClient
         $content = $response->getBody()->getContents();
 
         return (array) json_decode($content, true);
+    }
+
+    /**
+     * @param array<string,string|int> $attributes
+     *
+     * @throws \Exception
+     */
+    public function handleCallbackRequest(array $attributes): Payload
+    {
+        $this->payload = Payload::fromArray($attributes);
+        $originalSignature = $this->payload->p_sign;
+
+        $this->sign([
+            'amount',
+            'currency',
+            'order',
+            'merch_name',
+            'merchant',
+            'terminal',
+            'email',
+            'trtype',
+            'timestamp',
+            'nonce',
+            'backref',
+            'result',
+            'rc',
+            'rctext',
+            'authcode',
+            'rrn',
+            'int_ref',
+        ]);
+
+        if ($originalSignature !== $this->payload->p_sign) {
+            throw new InvalidSignatureException(
+                'The signature is not matching payload!'
+            );
+        }
+
+        return $this->payload;
     }
 }

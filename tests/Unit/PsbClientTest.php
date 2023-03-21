@@ -11,7 +11,10 @@ use GuzzleHttp\Psr7\Response;
 use LogicException;
 use Pashamesh\PsbAcquiringPhpSdk\Config;
 use Pashamesh\PsbAcquiringPhpSdk\FormBuilder;
+use Pashamesh\PsbAcquiringPhpSdk\Interfaces\SignerInterface;
 use Pashamesh\PsbAcquiringPhpSdk\Interfaces\TransactionType;
+use Pashamesh\PsbAcquiringPhpSdk\InvalidSignatureException;
+use Pashamesh\PsbAcquiringPhpSdk\Payload;
 use Pashamesh\PsbAcquiringPhpSdk\PsbClient;
 use PHPUnit\Framework\TestCase;
 
@@ -427,5 +430,104 @@ class PsbClientTest extends TestCase
         parse_str($request->getBody()->getContents(), $requestData);
 
         return $requestData;
+    }
+
+    public function testHandleCallbackRequest(): void
+    {
+        $requestAttributes = [
+            'AMOUNT' => '300',
+            'ORG_AMOUNT' => '',
+            'CURRENCY' => 'RUB',
+            'ORDER' => '620749153',
+            'DESC' => 'Order #620749153',
+            'MERCH_NAME' => 'Test Shop',
+            'MERCHANT' => '000599979036777',
+            'TERMINAL' => '79036777',
+            'EMAIL' => 'cardholder@mail.test',
+            'TRTYPE' => '1',
+            'TIMESTAMP' => '20230317022004',
+            'NONCE' => '4ca62d89dba536b1a96772b32bcc56d3',
+            'BACKREF' => 'https://some.host/',
+            'RESULT' => '0',
+            'RC' => '00',
+            'RCTEXT' => 'Approved',
+            'AUTHCODE' => '279498',
+            'RRN' => '307692025788',
+            'INT_REF' => '82EB65226A4CBA3F',
+            'P_SIGN' => 'some-signature',
+            'NAME' => 'TEST CARDHOLDER',
+            'CARD' => '5547XXXXXXXX4672',
+            'CHANNEL' => '',
+            'TOKEN_ID' => '',
+            'TARGET_TOKEN_ID' => '',
+            'TRX_ID' => '',
+            'ADDINFO' => '',
+        ];
+        $checkAttributes = [
+            'amount',
+            'currency',
+            'order',
+            'merch_name',
+            'merchant',
+            'terminal',
+            'email',
+            'trtype',
+            'timestamp',
+            'nonce',
+            'backref',
+            'result',
+            'rc',
+            'rctext',
+            'authcode',
+            'rrn',
+            'int_ref',
+        ];
+
+        $config = Config::fromArray(self::CONFIG_ARRAY);
+
+        $signer = $this->createMock(SignerInterface::class);
+        $signer->expects($this->once())
+            ->method('sign')
+            ->with(array_change_key_case($requestAttributes), $checkAttributes)
+            ->willReturn('some-signature');
+
+        $this->assertInstanceOf(
+            Payload::class,
+            (new PsbClient($config, $signer))->handleCallbackRequest($requestAttributes)
+        );
+    }
+
+    public function testHandleCallbackRequestThrowsInvalidSignatureException(): void
+    {
+        $requestAttributes = [
+            'CURRENCY' => 'RUB',
+            'TRTYPE' => TransactionType::REFUND,
+            'P_SIGN' => 'some-wrong-signature',
+        ];
+        $checkAttributes = [
+            'order',
+            'amount',
+            'currency',
+            'org_amount',
+            'rrn',
+            'int_ref',
+            'trtype',
+            'terminal',
+            'backref',
+            'email',
+            'timestamp',
+            'nonce',
+        ];
+
+        $config = Config::fromArray(self::CONFIG_ARRAY);
+
+        $signer = $this->createMock(SignerInterface::class);
+        $signer->expects($this->once())
+            ->method('sign')
+            ->with(array_change_key_case($requestAttributes), $checkAttributes)
+            ->willReturn('some-signature');
+
+        $this->expectException(InvalidSignatureException::class);
+        (new PsbClient($config, $signer))->handleCallbackRequest($requestAttributes);
     }
 }
