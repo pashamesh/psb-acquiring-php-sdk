@@ -323,10 +323,9 @@ class PsbClient
             'order',
         ]);
 
-        /** @var array<string, string>|null $response */
         $response = $this->doRequest('/cgi-bin/payment_ref/generate_payment_ref');
 
-        return !empty($response['REF']) ? strval($response['REF']) : null;
+        return $response->ref;
     }
 
     public function getForm(): string
@@ -345,7 +344,7 @@ class PsbClient
         echo $this->getForm();
     }
 
-    public function sendRequest(): array
+    public function sendRequest(): Payload
     {
         $this->fillConfigDefaults();
         $this->sign();
@@ -353,7 +352,7 @@ class PsbClient
         return $this->doRequest('/cgi-bin/cgi_link');
     }
 
-    private function doRequest(string $url): array
+    private function doRequest(string $url): Payload
     {
         // TODO: Use request factory.
         $request = new Request(
@@ -370,11 +369,11 @@ class PsbClient
 
         // TODO: Check response status.
 
-        // TODO: Use response DTO.
-
         $content = $response->getBody()->getContents();
+        /** @var array<string, int|string> $contentArray */
+        $contentArray = (array)json_decode($content, true);
 
-        return (array) json_decode($content, true);
+        return Payload::fromArray($contentArray);
     }
 
     /**

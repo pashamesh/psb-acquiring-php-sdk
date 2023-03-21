@@ -354,7 +354,7 @@ class PsbClientTest extends TestCase
             $httpClient
         );
 
-        $this->assertEquals(['KEY' => 'value'], $client->purchase($amount)->sendRequest());
+        $this->assertEquals(Payload::fromArray(['KEY' => 'value']), $client->purchase($amount)->sendRequest());
         /* @var Request $request */
         $request = $history[0]['request'];
         $this->assertEquals($expectedRequestUrl, (string)$request->getUri());

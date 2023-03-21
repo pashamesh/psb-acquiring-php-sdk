@@ -41,6 +41,7 @@ class Payload
     public ?string $target_token_id = null;
     public ?string $trx_id = null;
     public ?string $addinfo = null;
+    public ?string $ref = null;
 
     public ?string $p_sign = null;
 
