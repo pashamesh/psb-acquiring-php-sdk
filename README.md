@@ -241,10 +241,12 @@ $syncResponse = $psb
 $cardTokenId = '<CARD_TOKEN_UUID>';
 
 $syncResponse = $psb
-    ->customer($customerEmail)
-    ->order($orderId, "Order #{$orderId}")
     ->forgetCard($cardTokenId)
     ->sendRequest();
+
+if ($syncResponse->isOperationApproved()) {
+    // The card token was forgotten.
+}
 ```
 
 ### Handle callback HTTP call
