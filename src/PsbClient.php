@@ -55,10 +55,64 @@ class PsbClient
         $this->payload = new Payload();
     }
 
+    public function getResponseSignature(): string
+    {
+        $attributes = [
+            'amount',
+            'currency',
+            'order',
+            'merch_name',
+            'merchant',
+            'terminal',
+            'email',
+            'trtype',
+            'timestamp',
+            'nonce',
+            'backref',
+            'result',
+            'rc',
+            'rctext',
+            'authcode',
+            'rrn',
+            'int_ref',
+        ];
+
+        if (
+            in_array($this->payload->trtype, [
+                TransactionType::REFUND,
+                TransactionType::COMPLETE_PREAUTHORIZATION,
+                TransactionType::CANCEL_PREAUTHORIZATION,
+            ], true)
+        ) {
+            $attributes = [
+                'order',
+                'amount',
+                'currency',
+                'org_amount',
+                'rrn',
+                'int_ref',
+                'trtype',
+                'terminal',
+                'backref',
+                'email',
+                'timestamp',
+                'nonce',
+                'result',
+                'rc',
+                'rctext',
+            ];
+        }
+
+        return $this->signer->sign(
+            $this->payload->toArray(CASE_LOWER),
+            $attributes
+        );
+    }
+
     /**
      * @param array<array-key,string>|null $attributes
      */
-    public function sign(array $attributes = null): string
+    public function signRequest(array $attributes = null): string
     {
         $attributes ??= [
             'amount',
@@ -314,7 +368,7 @@ class PsbClient
         $this->payload->date_till = $dateTill;
 
         $this->fillConfigDefaults();
-        $this->sign([
+        $this->signRequest([
             'amount',
             'currency',
             'terminal',
@@ -331,7 +385,7 @@ class PsbClient
     public function getForm(): string
     {
         $this->fillConfigDefaults();
-        $this->sign();
+        $this->signRequest();
 
         $fields = $this->payload->toArray();
         $this->reset();
@@ -347,7 +401,7 @@ class PsbClient
     public function sendRequest(): Payload
     {
         $this->fillConfigDefaults();
-        $this->sign();
+        $this->signRequest();
 
         return $this->doRequest('/cgi-bin/cgi_link');
     }
@@ -384,29 +438,8 @@ class PsbClient
     public function handleCallbackRequest(array $attributes): Payload
     {
         $this->payload = Payload::fromArray($attributes);
-        $originalSignature = $this->payload->p_sign;
 
-        $this->sign([
-            'amount',
-            'currency',
-            'order',
-            'merch_name',
-            'merchant',
-            'terminal',
-            'email',
-            'trtype',
-            'timestamp',
-            'nonce',
-            'backref',
-            'result',
-            'rc',
-            'rctext',
-            'authcode',
-            'rrn',
-            'int_ref',
-        ]);
-
-        if ($originalSignature !== $this->payload->p_sign) {
+        if ($this->getResponseSignature() !== $this->payload->p_sign) {
             throw new InvalidSignatureException(
                 'The signature is not matching payload!'
             );

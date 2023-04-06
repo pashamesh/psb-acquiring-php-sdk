@@ -517,6 +517,9 @@ class PsbClientTest extends TestCase
             'email',
             'timestamp',
             'nonce',
+            'result',
+            'rc',
+            'rctext',
         ];
 
         $config = Config::fromArray(self::CONFIG_ARRAY);
