@@ -199,6 +199,13 @@ class PsbClient
         return $this;
     }
 
+    public function additionalInfo(string $info): self
+    {
+        $this->payload->addinfo = $info;
+
+        return $this;
+    }
+
     public function transaction(
         int $retrievalReferenceNumber,
         string $internalReference,

@@ -82,6 +82,7 @@ $expiresAt = '01.04.2023 03:30:00';
 $preauthorizeLink = $psb
     ->customer($customerEmail)
     ->order($orderId, "Order #{$orderId}")
+    ->additionalInfo('Additional information')
     ->preauthorize($amount)
     ->getLink($expiresAt);
 ```

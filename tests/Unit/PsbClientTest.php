@@ -116,6 +116,15 @@ class PsbClientTest extends TestCase
         $this->assertEquals($url, $this->client->getPayload()->backref);
     }
 
+    public function testAdditionalInfo(): void
+    {
+        $info = 'Some additional info.';
+
+        $this->assertInstanceOf(PsbClient::class, $this->client->additionalInfo($info));
+
+        $this->assertEquals($info, $this->client->getPayload()->addinfo);
+    }
+
     /**
      * @testWith [1, "purchase"]
      *           [12, "preauthorize"]
