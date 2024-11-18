@@ -436,7 +436,6 @@ class PsbClientTest extends TestCase
 
     public function testGetStatus(): void
     {
-        $url = 'the-payment-lint';
         $amount = 123.45;
         $config = Config::fromArray(self::CONFIG_ARRAY);
         $timestamp = 'the-timestamp';
@@ -498,7 +497,6 @@ class PsbClientTest extends TestCase
 
     public function testGetStatusReturnsEmptyArray(): void
     {
-        $url = 'the-payment-lint';
         $amount = 123.45;
         $config = Config::fromArray(self::CONFIG_ARRAY);
         $timestamp = 'the-timestamp';
