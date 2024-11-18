@@ -86,6 +86,15 @@ $preauthorizeLink = $psb
     ->preauthorize($amount)
     ->getLink($expiresAt);
 ```
+To get payment status, use `getStatus` method after building client
+```
+$psb
+    ->customer($customerEmail)
+    ->order($orderId, "Order #{$orderId}")
+    ->preauthorize($amount)
+    ->getStatus();
+```
+
 To save card during the preauthorization process use `preauthorizeAndSaveCard` method: 
 ```php
 $psb

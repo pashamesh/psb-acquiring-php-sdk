@@ -434,6 +434,114 @@ class PsbClientTest extends TestCase
         $this->client->getLink();
     }
 
+    public function testGetStatus(): void
+    {
+        $url = 'the-payment-lint';
+        $amount = 123.45;
+        $config = Config::fromArray(self::CONFIG_ARRAY);
+        $timestamp = 'the-timestamp';
+        $nonce = 'the-nonce';
+
+        $expectedRequestUrl = 'https://test.3ds.payment.ru/cgi-bin/check_operation/ecomm_check';
+        $expectedRequestData = [
+            'AMOUNT' => strval($amount),
+            'CURRENCY' => 'RUB',
+            'TERMINAL' => $config->terminalNumber,
+            'TRTYPE' => strval(TransactionType::PURCHASE),
+            'MERCH_NAME' => $config->merchantName,
+            'MERCHANT' => $config->merchantNumber,
+            'TIMESTAMP' => $timestamp,
+            'NONCE' => $nonce,
+            'NOTIFY_URL' => $config->notifyUrl,
+            'P_SIGN' => '72C7434ABF2DE21685A58FBAF138BE3427865C2975960B3060917ADAA5B671C8',
+        ];
+
+        $history = [];
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                    "AMOUNT" => strval($amount),
+                    "CURRENCY" => "RUB",
+                    "MERCH_NAME" => "TEST RETAIL",
+                    "TERMINAL" => $config->terminalNumber,
+                    "TRTYPE" => "1",
+                    "TIMESTAMP" => $timestamp,
+                    "NONCE" => $nonce,
+                    "RESULT" => "0",
+                    "RC" => "00",
+                    "RCTEXT" => "Approved",
+                    "AUTHCODE" => "263763",
+                    "RRN" => "432393334442",
+                    "INT_REF" => "B5DEBAF106686C1F",
+                    "P_SIGN" => "e7da0e098f5d5184489c8253599e53f595ff7e6b91567d7378922d17cbfafbac",
+            ]))
+        ]);
+        $handler = HandlerStack::create($mock);
+        $handler->push(Middleware::history($history));
+        $httpClient = new Client(['handler' => $handler]);
+
+        $client = new PsbClient(
+            $config,
+            null,
+            fn () => $timestamp,
+            fn () => $nonce,
+            null,
+            $httpClient
+        );
+
+        $payload = $client->purchase($amount)->getStatus();
+        $this->assertTrue($payload->isOperationApproved());
+
+        $request = $history[0]['request'];
+        $this->assertEquals($expectedRequestUrl, (string) $request->getUri());
+        $this->assertEquals($expectedRequestData, $this->getRequestData($request));
+    }
+
+    public function testGetStatusReturnsEmptyArray(): void
+    {
+        $url = 'the-payment-lint';
+        $amount = 123.45;
+        $config = Config::fromArray(self::CONFIG_ARRAY);
+        $timestamp = 'the-timestamp';
+        $nonce = 'the-nonce';
+
+        $expectedRequestUrl = 'https://test.3ds.payment.ru/cgi-bin/check_operation/ecomm_check';
+        $expectedRequestData = [
+            'AMOUNT' => strval($amount),
+            'CURRENCY' => 'RUB',
+            'TERMINAL' => $config->terminalNumber,
+            'TRTYPE' => strval(TransactionType::PURCHASE),
+            'MERCH_NAME' => $config->merchantName,
+            'MERCHANT' => $config->merchantNumber,
+            'TIMESTAMP' => $timestamp,
+            'NONCE' => $nonce,
+            'NOTIFY_URL' => $config->notifyUrl,
+            'P_SIGN' => '72C7434ABF2DE21685A58FBAF138BE3427865C2975960B3060917ADAA5B671C8',
+        ];
+
+        $history = [];
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([]))
+        ]);
+        $handler = HandlerStack::create($mock);
+        $handler->push(Middleware::history($history));
+        $httpClient = new Client(['handler' => $handler]);
+        $client = new PsbClient(
+            $config,
+            null,
+            fn () => $timestamp,
+            fn () => $nonce,
+            null,
+            $httpClient
+        );
+
+        $payload = $client->purchase($amount)->getStatus();
+        $this->assertFalse($payload->isOperationApproved());
+
+        $request = $history[0]['request'];
+        $this->assertEquals($expectedRequestUrl, (string) $request->getUri());
+        $this->assertEquals($expectedRequestData, $this->getRequestData($request));
+    }
+
     private function getRequestData(Request $request): array
     {
         parse_str($request->getBody()->getContents(), $requestData);

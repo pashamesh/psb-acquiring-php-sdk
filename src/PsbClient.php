@@ -389,6 +389,14 @@ class PsbClient
         return $response->ref;
     }
 
+    public function getStatus(): Payload
+    {
+        $this->fillConfigDefaults();
+        $this->signRequest();
+
+        return $this->doRequest('/cgi-bin/check_operation/ecomm_check');
+    }
+
     public function getForm(): string
     {
         $this->fillConfigDefaults();
