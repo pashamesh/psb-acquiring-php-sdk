@@ -311,4 +311,4 @@ make test
 ```
 
 ## Links
-- [Original docs (RU)](https://www.psbank.ru/-/media/Files/Business/Acquiring/Internet/TechDoc/Interaction_procedure_standard.pdf)
+- [Original docs (RU)](https://www.psbank.ru/qpstorage/psb/images/Interaction_procedure_standard.pdf)
