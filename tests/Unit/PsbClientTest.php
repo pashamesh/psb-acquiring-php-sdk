@@ -472,7 +472,7 @@ class PsbClientTest extends TestCase
                     "RRN" => "432393334442",
                     "INT_REF" => "B5DEBAF106686C1F",
                     "P_SIGN" => "e7da0e098f5d5184489c8253599e53f595ff7e6b91567d7378922d17cbfafbac",
-            ]))
+            ])),
         ]);
         $handler = HandlerStack::create($mock);
         $handler->push(Middleware::history($history));
@@ -518,7 +518,7 @@ class PsbClientTest extends TestCase
 
         $history = [];
         $mock = new MockHandler([
-            new Response(200, [], json_encode([]))
+            new Response(200, [], json_encode([])),
         ]);
         $handler = HandlerStack::create($mock);
         $handler->push(Middleware::history($history));
