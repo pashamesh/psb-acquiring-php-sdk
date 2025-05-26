@@ -44,7 +44,7 @@ final class Config
         string $notifyUrl = null,
         string $returnUrl = null
     ) {
-        if ($component1 && $component2) {
+        if (! is_null($component1) && ! is_null($component2)) {
             $this->component1 = $component1;
             $this->component2 = $component2;
             $this->gatewayDomain = 'https://3ds.payment.ru';

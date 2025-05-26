@@ -50,10 +50,16 @@ class Payload
      */
     public function toArray(int $case = CASE_UPPER): array
     {
-        return array_change_key_case(
-            array_filter(get_object_vars($this), fn ($value) => !is_null($value)),
+        /** @psalm-var array<string,string|int> $result */
+        $result = array_change_key_case(
+            array_filter(
+                get_object_vars($this),
+                fn ($value) => !is_null($value)
+            ),
             $case
         );
+
+        return $result;
     }
 
     /**

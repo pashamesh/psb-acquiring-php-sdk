@@ -1,4 +1,4 @@
-ARG PHP_VERSION=7.4
+ARG PHP_VERSION=8.3
 FROM php:${PHP_VERSION}-fpm-alpine
 
 RUN apk add --no-cache --virtual .persistent-deps \

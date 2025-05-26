@@ -213,7 +213,7 @@ class PsbClient
     ): self {
         $this->payload->rrn = strval($retrievalReferenceNumber);
         $this->payload->int_ref = $internalReference;
-        if ($amount) {
+        if (! is_null($amount)) {
             $this->payload->org_amount = strval($amount);
         }
 
