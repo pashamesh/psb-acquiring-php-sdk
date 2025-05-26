@@ -15,6 +15,9 @@ setup:
 up:
 	docker-compose up -d
 
+build:
+	docker-compose build
+
 share:
 	docker-compose --profile share up -d && \
 		echo && \
@@ -23,7 +26,7 @@ share:
 down:
 	docker-compose down --remove-orphans -v
 
-shell:
+shell sh:
 	$(DC) bash
 
 lint-show:
